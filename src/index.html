@@ -14,25 +14,13 @@
         canvas.height=window.innerHeight;
 
         const idle=0,waiting=1,start=2,result=3;
+        let audio;
         let state=idle;
         let box='yellow';
         let text='press space to start';
         let best=null;
         let go_time=0;
         let time_id;
-        let audio;
-
-        const beep= (freq,dur)=>{
-            const osc=audio.createOscillator();
-            const vol=audio.createGain();
-            osc.type='sine';
-            osc.frequency.value=freq;
-            vol.gain.value=0.2;
-            osc.connect(vol);
-            vol.connect(audio.destination);
-            osc.start();
-            osc.stop(audio.currentTime+dur);
-        };
 
          const draw=()=>{
             c.fillStyle='white';
@@ -73,16 +61,13 @@
         };
 
         const click =()=> {
-            if(audio===undefined){
-                audio=new AudioContext();
-            }
             if(state===waiting){
                 clearTimeout(time_id);
                 state=result;
                 box='orange';
                 text='early click, retry!';
-                draw();
                 beep(800,0.15);
+                draw();
             }
             else if(state===start){
                 const reaction= Math.round(performance.now()-go_time);
@@ -90,16 +75,31 @@
                 state=result;
                 box='black';
                 text=reaction+'ms,press to go again';
-                draw();
                 beep(400,0.15);
+                draw();
             }
             else start_game();
+            if(audio===undefined){
+                audio=new AudioContext();
+            }
         };
         window.onpointerdown=click;
         window.onkeydown=event=>{
             if(event.repeat)return;
             if(event.key===' ')click();
         };
+         const beep= (freq,dur)=>{
+            const osc=audio.createOscillator();
+            const vol=audio.createGain();
+            osc.type='sine';
+            osc.frequency.value=freq;
+            vol.gain.value=0.2;
+            osc.connect(vol);
+            vol.connect(audio.destination);
+            osc.start();
+            osc.stop(audio.currentTime+dur);
+        };
+
     </script>
 </body>
 </html>
