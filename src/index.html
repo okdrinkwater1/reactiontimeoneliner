@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+       body{margin:0;}
+    </style>
+</head>
+<body>
+    <canvas id="a"></canvas>
+    <script>
+        const canvas=document.getElementById('a');
+        const c=canvas.getContext('2d');
+        canvas.width=window.innerWidth;
+        canvas.height=window.innerHeight;
+
+        const idle=0,waiting=1,start=2,result=3;
+        let state=idle;
+        let box='yellow';
+        let text='press space to start';
+        let best=null;
+        let go_time=0;
+        let time_id;
+
+         const draw=()=>{
+            c.fillStyle='white';
+            c.fillRect(0,0,canvas.width,canvas.height);
+            const size=200;
+            const box_x=canvas.width/2-size/2;
+            const box_y=canvas.height/2-size/2;
+            c.fillStyle=box;
+            c.fillRect(box_x,box_y,size,size);
+            c.strokeStyle='#111';
+            c.lineWidth=4;
+            c.strokeRect(box_x,box_y,size,size);
+            c.fillStyle='#111';
+            c.textAlign='center';
+            c.font='30px system-ui,sans-serif';
+            c.fillText(text,canvas.width/2, box_y+size+50);
+            c.font='20px system-ui,sans-serif';
+            if(best!==null){
+                c.fillText('best:'+best+'ms', canvas.width/2, box_y-20);
+
+            }
+        };
+        draw();
+
+        const start_game= ()=> {
+            state=waiting;
+            box='blue';
+            text='wait for purple';
+            draw();
+            const delay= 1000+Math.random()*3000;
+            time_id=setTimeout(()=>{
+                state=start;
+                box='purple';
+                text='go';
+                go_time=performance.now();
+                draw();
+            },delay);
+        };
+
+        const click =()=> {
+            if(state===waiting){
+                clearTimeout(time_id);
+                state=result;
+                box='orange';
+                text='early click, retry!';
+                draw();
+            }
+            else if(state===start){
+                const reaction= Math.round(performance.now()-go_time);
+                if(best===null||reaction<best)best=reaction;
+                state=result;
+                box='black';
+                text=reaction+'ms,press to go again';
+                draw();
+            }
+            else start_game();
+        };
+        window.onpointerdown=click;
+        window.onkeydown=event=>{
+            if(event.repeat)return;
+            if(event.key===' ')click();
+        };
+    </script>
+</body>
+</html>
