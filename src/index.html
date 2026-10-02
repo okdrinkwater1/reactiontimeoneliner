@@ -20,6 +20,19 @@
         let best=null;
         let go_time=0;
         let time_id;
+        let audio;
+
+        const beep= (freq,dur)=>{
+            const osc=audio.createOscillator();
+            const vol=audio.createGain();
+            osc.type='sine';
+            osc.frequency.value=freq;
+            vol.gain.value=0.2;
+            osc.connect(vol);
+            vol.connect(audio.destination);
+            osc.start();
+            osc.stop(audio.currentTime+dur);
+        };
 
          const draw=()=>{
             c.fillStyle='white';
@@ -60,12 +73,16 @@
         };
 
         const click =()=> {
+            if(audio===undefined){
+                audio=new AudioContext();
+            }
             if(state===waiting){
                 clearTimeout(time_id);
                 state=result;
                 box='orange';
                 text='early click, retry!';
                 draw();
+                beep(800,0.15);
             }
             else if(state===start){
                 const reaction= Math.round(performance.now()-go_time);
@@ -74,6 +91,7 @@
                 box='black';
                 text=reaction+'ms,press to go again';
                 draw();
+                beep(400,0.15);
             }
             else start_game();
         };
